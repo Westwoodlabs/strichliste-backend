@@ -59,8 +59,14 @@ class User {
      */
     private $transactions;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\UserToken", mappedBy="user")
+     */
+    private $tokens;
+
     function __construct() {
         $this->transactions = new ArrayCollection();
+        $this->tokens = new ArrayCollection();
     }
 
     function getId(): ?int {
@@ -138,6 +144,13 @@ class User {
      */
     function getTransactions(): Collection {
         return $this->transactions;
+    }
+
+    /**
+     * @return Collection|UserToken[]
+     */
+    function getTokens(): Collection {
+        return $this->tokens;
     }
 
     /**

@@ -20,6 +20,7 @@ Note: This response is Pageable. See #Pagination
       "active": true,
       "email": "foo@bar.de",
       "balance": 233,
+      "tokens": ["a1b2c3d4e5f6"],
       "created": "2018-08-17 16:20:57",
       "updated": "2018-08-17 16:22:41"
     },
@@ -39,16 +40,18 @@ Create a new user
 ```json
 {
   "name": "Username",
-  "email": "foo@bar.de"
+  "email": "foo@bar.de",
+  "tokens": ["a1b2c3d4e5f6"]
 }
 ```
 
 #### Request-Parameters
 
-|  field  | datatype    | description                   |
-|---------|-------------|-------------------------------|
-| name    | string      | username                      |
-| email   | string      | e-mail address (optional )    |
+| field   | datatype       | description                             |
+|---------|----------------|-----------------------------------------|
+| name    | string         | username                                |
+| email   | string         | e-mail address (optional )              |
+| tokens  | array (string) | tokens for quick user select (optional) |
 
 #### Response
 
@@ -226,17 +229,19 @@ Updates user
 {
   "name": "Username",
   "email": "foo@bar.de",
+  "tokens": ["a1b2c3d4e5f6"],
   "active": false
 }
 ```
 
 #### Request-Parameters
 
-|  field  | datatype    | description                   |
-|---------|-------------|-------------------------------|
-| name    | string      | username                      |
-| email   | string      | e-mail address (optional)     |
-| active  | boolean     | active/inactive               |
+|  field  | datatype       | description                   |
+|---------|----------------|-------------------------------|
+| name    | string         | username                      |
+| email   | string         | e-mail address (optional)     |
+| tokens  | array (string) | tokens for quick user select  |
+| active  | boolean        | active/inactive               |
 
 #### Response
 
@@ -246,6 +251,7 @@ Returns the created `User-Object`
 
 * UserNotFoundException
 * UserAlreadyExistsException
+* TokenAlreadyInUseException
 * ParameterMissingException
 * ParameterInvalidException
 
@@ -308,6 +314,7 @@ Search users by name
       "active": true,
       "email": "foo@bar.de",
       "balance": 233,
+      "tokens": [],
       "created": "2018-08-17 16:20:57",
       "updated": "2018-08-17 16:22:41"
     },
@@ -508,6 +515,7 @@ With these two parameters, you can page through the result set:
   "active": true,
   "email": "foo@bar.de",
   "balance": 233,
+  "tokens": ["a1b2c3d4e5f6"],
   "created": "2018-08-17 16:20:57",
   "updated": "2018-08-17 16:22:41"
 }
@@ -520,6 +528,7 @@ With these two parameters, you can page through the result set:
 | active  | boolean        | If user is deactivated or not |
 | email   | string or null | e-mail address (optional )    |
 | balance | integer        | balance in cents              |
+| tokens  | array (string) | tokens for quick user select  |
 | created | datetime       | datetime of creating          |
 | updated | datetime       | datetime of last transaction  |
 
@@ -619,6 +628,7 @@ Current possible exceptions are
 | ParameterInvalidException            | 400              | Parameter 'email' is invalid                                                     |
 | ParameterMissingException            | 400              | Parameter 'name' is missing                                                      |
 | ParameterNotFoundException           | 500              | Mandarory config value 'parameter.foo' is missing                                |
+| TokenAlreadyInUseException           | 409              | Token 'a1b2c3d4e5f6' is already in use                                           |
 | TransactionBoundaryException         | 400              | Transaction amount '10' exceeds upper transaction boundary '3'                   |
 | TransactionNotFoundException         | 404              | Transaction '42' not found for user '23'                                         |
 | TransactionNotDeletableException     | 400              | Transaction '42' is not deleteable                                               |

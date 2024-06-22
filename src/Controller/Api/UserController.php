@@ -3,8 +3,10 @@
 namespace App\Controller\Api;
 
 use App\Entity\User;
+use App\Entity\UserToken;
 use App\Exception\ParameterInvalidException;
 use App\Exception\ParameterMissingException;
+use App\Exception\TokenAlreadyInUseException;
 use App\Exception\UserAlreadyExistsException;
 use App\Exception\UserNotFoundException;
 use App\Serializer\UserSerializer;
@@ -90,6 +92,22 @@ class UserController extends AbstractController {
             $user->setEmail(trim($email));
         }
 
+        $tokens = $request->request->get('tokens');
+        if ($tokens) {
+            $userTokens = [];
+            foreach ($tokens as $token) {
+                $userToken = $entityManager->getRepository(UserToken::class)->findByToken($token);
+                if ($userToken && $userToken->getUser() != $user) {
+                    throw new TokenAlreadyInUseException($token);
+                }
+                $userToken = new UserToken();
+                $userToken->setToken($token);
+                $userToken->setUser($user);
+                $userTokens[] = $userToken;
+            }
+            $user->setTokens($userTokens);
+        }
+
         $entityManager->persist($user);
         $entityManager->flush();
 
@@ -119,6 +137,21 @@ class UserController extends AbstractController {
             'users' => array_map(function (User $user) {
                 return $this->userSerializer->serialize($user);
             }, $results),
+        ]);
+    }
+
+    /**
+     * @Route("/token", methods="GET")
+     */
+    function searchByToken(Request $request, EntityManagerInterface $entityManager) {
+        $token = $request->query->get('token');
+        $userToken = $entityManager->getRepository(UserToken::class)->findByToken($token);
+        if (!$userToken) {
+            throw new UserNotFoundException($token);
+        }
+
+        return $this->json([
+            'user' => $this->userSerializer->serialize($userToken->getUser()),
         ]);
     }
 
@@ -168,6 +201,22 @@ class UserController extends AbstractController {
             }
 
             $user->setEmail($email);
+        }
+
+        $tokens = $request->request->get('tokens');
+        if ($tokens) {
+            $userTokens = [];
+            foreach ($tokens as $token) {
+                $userToken = $entityManager->getRepository(UserToken::class)->findByToken($token);
+                if ($userToken && $userToken->getUser() != $user) {
+                    throw new TokenAlreadyInUseException($token);
+                }
+                $userToken = new UserToken();
+                $userToken->setToken($token);
+                $userToken->setUser($user);
+                $userTokens[] = $userToken;
+            }
+            $user->setTokens($userTokens);
         }
 
         $isDisabled = $request->request->get('isDisabled');
