@@ -9,12 +9,11 @@ use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Table(name="`user_token`", uniqueConstraints={
- *     @UniqueConstraint(name="token_unique", columns={"token"})
- * })
+ * @ORM\Table(name="`user_token`")
  * @ORM\Entity(repositoryClass="App\Repository\UserTokenRepository")
  */
-class UserToken {
+class UserToken
+{
 
     /**
      * @ORM\Id()
@@ -24,7 +23,7 @@ class UserToken {
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=64, nullable=true)
+     * @ORM\Column(type="string", length=64, nullable=true, unique=true)
      */
     private $token = null;
 
@@ -34,15 +33,18 @@ class UserToken {
      */
     private $user;
 
-    function getId(): ?int {
+    function getId(): ?int
+    {
         return $this->id;
     }
 
-    function getToken(): ?string {
+    function getToken(): ?string
+    {
         return $this->token;
     }
 
-    function setToken(string $token): self {
+    function setToken(string $token): self
+    {
         $this->token = $token;
 
         return $this;
