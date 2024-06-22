@@ -16,3 +16,4 @@ RUN docker-php-ext-install mysqli pdo pdo_mysql
 # RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && npm install -g <your-package-here>" 2>&1
 
 COPY ./apache.conf /etc/apache2/sites-available/000-default.conf
+COPY ./ports.conf /etc/apache2/ports.conf

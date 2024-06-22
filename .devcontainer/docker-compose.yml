@@ -17,20 +17,31 @@ services:
 
     # Use "forwardPorts" in **devcontainer.json** to forward an app port locally.
     # (Adding the "ports" property to this file will not forward from a Codespace.)
+    environment:
+      DATABASE_URL: mysql://strichliste:strichliste@db/strichliste
 
   db:
-    image: mariadb:10.4
+    image: mariadb:10.6
     restart: unless-stopped
     volumes:
       - mariadb-data:/var/lib/mysql
     environment:
-      MYSQL_ROOT_PASSWORD: mariadb
-      MYSQL_DATABASE: mariadb
-      MYSQL_USER: mariadb
-      MYSQL_PASSWORD: mariadb
+      MARIADB_ROOT_PASSWORD: strichliste
+      MARIADB_DATABASE: strichliste
+      MARIADB_USER: strichliste
+      MARIADB_PASSWORD: strichliste
 
     # Add "forwardPorts": ["3306"] to **devcontainer.json** to forward MariaDB locally.
     # (Adding the "ports" property to this file will not forward from a Codespace.)
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    restart: unless-stopped
+    ports:
+      - 8081:80
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: strichliste
 
 volumes:
   mariadb-data:
