@@ -49,4 +49,9 @@ class UserToken
 
         return $this;
     }
+
+    function getUser(): ?User
+    {
+        return $this->user;
+    }
 }

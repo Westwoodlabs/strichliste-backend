@@ -5,18 +5,21 @@ namespace App\Serializer;
 use App\Entity\User;
 use App\Service\UserService;
 
-class UserSerializer {
+class UserSerializer
+{
 
     /**
      * @var UserService
      */
     private $userService;
 
-    function __construct(UserService $userService) {
+    function __construct(UserService $userService)
+    {
         $this->userService = $userService;
     }
 
-    function serialize(User $user): array {
+    function serialize(User $user): array
+    {
         return [
             'id' => $user->getId(),
             'name' => $user->getName(),
@@ -24,7 +27,7 @@ class UserSerializer {
             'balance' => $user->getBalance(),
             'isActive' => $this->userService->isActive($user),
             'isDisabled' => $user->isDisabled(),
-            'tokens' => $user->getTokens().map(function($token) {
+            'tokens' => $user->getTokens()->map(function ($token) {
                 return $token->getToken();
             }),
             'created' => $user->getCreated()->format('Y-m-d H:i:s'),

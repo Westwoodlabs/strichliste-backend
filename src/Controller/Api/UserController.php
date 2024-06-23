@@ -19,21 +19,24 @@ use Symfony\Component\Routing\Annotation\Route;
 /**
  * @Route("/api/user")
  */
-class UserController extends AbstractController {
+class UserController extends AbstractController
+{
 
     /**
      * @var UserSerializer
      */
     private $userSerializer;
 
-    function __construct(UserSerializer $userSerializer) {
+    function __construct(UserSerializer $userSerializer)
+    {
         $this->userSerializer = $userSerializer;
     }
 
     /**
      * @Route(methods="GET")
      */
-    function list(Request $request, UserService $userService, EntityManagerInterface $entityManager) {
+    function list(Request $request, UserService $userService, EntityManagerInterface $entityManager)
+    {
         $active = $request->query->get('active');
 
         $staleDateTime = $userService->getStaleDateTime();
@@ -48,7 +51,7 @@ class UserController extends AbstractController {
         }
 
         usort($users, function (User $a, User $b) {
-           return strnatcasecmp($a->getName(), $b->getName());
+            return strnatcasecmp($a->getName(), $b->getName());
         });
 
         return $this->json([
@@ -61,7 +64,8 @@ class UserController extends AbstractController {
     /**
      * @Route(methods="POST")
      */
-    function createUser(Request $request, EntityManagerInterface $entityManager) {
+    function createUser(Request $request, EntityManagerInterface $entityManager)
+    {
 
         $name = $request->request->get('name');
         if (!$name) {
@@ -92,21 +96,21 @@ class UserController extends AbstractController {
             $user->setEmail(trim($email));
         }
 
-        $tokens = $request->request->get('tokens');
-        if ($tokens) {
-            $userTokens = [];
-            foreach ($tokens as $token) {
-                $userToken = $entityManager->getRepository(UserToken::class)->findByToken($token);
-                if ($userToken && $userToken->getUser() != $user) {
-                    throw new TokenAlreadyInUseException($token);
-                }
-                $userToken = new UserToken();
-                $userToken->setToken($token);
-                $userToken->setUser($user);
-                $userTokens[] = $userToken;
-            }
-            $user->setTokens($userTokens);
-        }
+        // $tokens = $request->request->get('tokens');
+        // if ($tokens) {
+        //     $userTokens = [];
+        //     foreach ($tokens as $token) {
+        //         $userToken = $entityManager->getRepository(UserToken::class)->findByToken($token);
+        //         if ($userToken && $userToken->getUser() != $user) {
+        //             throw new TokenAlreadyInUseException($token);
+        //         }
+        //         $userToken = new UserToken();
+        //         $userToken->setToken($token);
+        //         $userToken->setUser($user);
+        //         $userTokens[] = $userToken;
+        //     }
+        //     $user->setTokens($userTokens);
+        // }
 
         $entityManager->persist($user);
         $entityManager->flush();
@@ -119,7 +123,8 @@ class UserController extends AbstractController {
     /**
      * @Route("/search", methods="GET")
      */
-    function search(Request $request, EntityManagerInterface $entityManager) {
+    function search(Request $request, EntityManagerInterface $entityManager)
+    {
         $query = $request->query->get('query');
         $limit = $request->query->get('limit', 25);
 
@@ -143,7 +148,8 @@ class UserController extends AbstractController {
     /**
      * @Route("/token", methods="GET")
      */
-    function searchByToken(Request $request, EntityManagerInterface $entityManager) {
+    function searchByToken(Request $request, EntityManagerInterface $entityManager)
+    {
         $token = $request->query->get('token');
         $userToken = $entityManager->getRepository(UserToken::class)->findByToken($token);
         if (!$userToken) {
@@ -158,7 +164,8 @@ class UserController extends AbstractController {
     /**
      * @Route("/{userId}", methods="GET")
      */
-    function user($userId, EntityManagerInterface $entityManager) {
+    function user($userId, EntityManagerInterface $entityManager)
+    {
         $user = $entityManager->getRepository(User::class)->findByIdentifier($userId);
         if (!$user) {
             throw new UserNotFoundException($userId);
@@ -172,7 +179,8 @@ class UserController extends AbstractController {
     /**
      * @Route("/{userId}", methods="POST")
      */
-    function updateUser($userId, Request $request, EntityManagerInterface $entityManager) {
+    function updateUser($userId, Request $request, EntityManagerInterface $entityManager)
+    {
         $user = $entityManager->getRepository(User::class)->findByIdentifier($userId);
         if (!$user) {
             throw new UserNotFoundException($userId);
@@ -203,21 +211,21 @@ class UserController extends AbstractController {
             $user->setEmail($email);
         }
 
-        $tokens = $request->request->get('tokens');
-        if ($tokens) {
-            $userTokens = [];
-            foreach ($tokens as $token) {
-                $userToken = $entityManager->getRepository(UserToken::class)->findByToken($token);
-                if ($userToken && $userToken->getUser() != $user) {
-                    throw new TokenAlreadyInUseException($token);
-                }
-                $userToken = new UserToken();
-                $userToken->setToken($token);
-                $userToken->setUser($user);
-                $userTokens[] = $userToken;
-            }
-            $user->setTokens($userTokens);
-        }
+        // $tokens = $request->request->get('tokens');
+        // if ($tokens) {
+        //     $userTokens = [];
+        //     foreach ($tokens as $token) {
+        //         $userToken = $entityManager->getRepository(UserToken::class)->findByToken($token);
+        //         if ($userToken && $userToken->getUser() != $user) {
+        //             throw new TokenAlreadyInUseException($token);
+        //         }
+        //         $userToken = new UserToken();
+        //         $userToken->setToken($token);
+        //         $userToken->setUser($user);
+        //         $userTokens[] = $userToken;
+        //     }
+        //     $user->setTokens($userTokens);
+        // }
 
         $isDisabled = $request->request->get('isDisabled');
         if ($isDisabled !== null) {
