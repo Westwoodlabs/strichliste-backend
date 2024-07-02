@@ -27,9 +27,7 @@ class UserSerializer
             'balance' => $user->getBalance(),
             'isActive' => $this->userService->isActive($user),
             'isDisabled' => $user->isDisabled(),
-            'tokens' => $user->getTokens()->map(function ($token) {
-                return $token->getToken();
-            })->toArray(),
+            'token' => $user->getToken(),
             'created' => $user->getCreated()->format('Y-m-d H:i:s'),
             'updated' => $user->getUpdated() ? $user->getUpdated()->format('Y-m-d H:i:s') : null
         ];

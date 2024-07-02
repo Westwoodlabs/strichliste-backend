@@ -3,7 +3,6 @@
 namespace App\Controller\Api;
 
 use App\Entity\User;
-use App\Entity\UserToken;
 use App\Exception\ParameterInvalidException;
 use App\Exception\ParameterMissingException;
 use App\Exception\TokenAlreadyInUseException;
@@ -97,7 +96,15 @@ class UserController extends AbstractController
             $user->setEmail(trim($email));
         }
 
-         $this->updateUserTokens($request, $entityManager, $user);
+        $token = $request->request->get('token');
+        if ($token) {
+            $tokenUser = $entityManager->getRepository(User::class)->findByToken($token);
+            if ($tokenUser && $tokenUser != $user) {
+                throw new TokenAlreadyInUseException($token);
+            }
+
+            $user->setToken($token);
+        }
 
         $entityManager->persist($user);
         $entityManager->flush();
@@ -141,13 +148,13 @@ class UserController extends AbstractController
     function searchByToken(Request $request, EntityManagerInterface $entityManager)
     {
         $token = $request->query->get('token');
-        $userToken = $entityManager->getRepository(UserToken::class)->findByToken($token);
-        if (!$userToken) {
+        $tokenUser = $entityManager->getRepository(User::class)->findByToken($token);
+        if (!$tokenUser) {
             throw new UserNotFoundException($token);
         }
 
         return $this->json([
-            'user' => $this->userSerializer->serialize($userToken->getUser()),
+            'user' => $this->userSerializer->serialize($tokenUser),
         ]);
     }
 
@@ -201,7 +208,16 @@ class UserController extends AbstractController
 
             $user->setEmail($email);
         }
-        $this->updateUserTokens($request, $entityManager, $user);
+        $token = $request->request->get('token');
+        if ($token) {
+            $tokenUser = $entityManager->getRepository(User::class)->findByToken($token);
+            if ($tokenUser && $tokenUser != $user) {
+                throw new TokenAlreadyInUseException($token);
+            }
+
+            $user->setToken($token);
+        }
+
 
         $isDisabled = $request->request->get('isDisabled');
         if ($isDisabled !== null) {
@@ -217,40 +233,5 @@ class UserController extends AbstractController
         return $this->json([
             'user' => $this->userSerializer->serialize($user),
         ]);
-    }
-
-    /**
-     * @param Request $request
-     * @param EntityManagerInterface $entityManager
-     * @param User $user
-     * @return void
-     * @throws TokenAlreadyInUseException
-     */
-    public function updateUserTokens(Request $request, EntityManagerInterface $entityManager, User $user): void
-    {
-        /** @var array $tokens
-         */
-        $tokens = $request->request->get('tokens');
-        if ($tokens !== null) {
-            foreach ($tokens as $token) {
-                $userToken = $entityManager->getRepository(UserToken::class)->findByToken($token);
-                if ($userToken && $userToken->getUser() != $user) {
-                    throw new TokenAlreadyInUseException($token);
-                }
-                if (!$user->getTokens()->exists(function ($key, $element) use ($token) {
-                    return $element->getToken() === $token;
-                })) {
-                    $addToken = new UserToken();
-                    $addToken->setToken($token);
-                    $addToken->setUser($user);
-                    $entityManager->persist($addToken);
-                }
-            }
-            foreach ($user->getTokens() as $userToken) {
-                if (!in_array($userToken->getToken(), $tokens)) {
-                    $entityManager->remove($userToken);
-                }
-            }
-        }
     }
 }
