@@ -54,4 +54,10 @@ class UserToken
     {
         return $this->user;
     }
+
+    function setUser(?User $user): self
+    {
+        $this->user = $user;
+        return $this;
+    }
 }

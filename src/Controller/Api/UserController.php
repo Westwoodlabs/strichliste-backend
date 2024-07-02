@@ -11,6 +11,7 @@ use App\Exception\UserAlreadyExistsException;
 use App\Exception\UserNotFoundException;
 use App\Serializer\UserSerializer;
 use App\Service\UserService;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -96,24 +97,13 @@ class UserController extends AbstractController
             $user->setEmail(trim($email));
         }
 
-        // $tokens = $request->request->get('tokens');
-        // if ($tokens) {
-        //     $userTokens = [];
-        //     foreach ($tokens as $token) {
-        //         $userToken = $entityManager->getRepository(UserToken::class)->findByToken($token);
-        //         if ($userToken && $userToken->getUser() != $user) {
-        //             throw new TokenAlreadyInUseException($token);
-        //         }
-        //         $userToken = new UserToken();
-        //         $userToken->setToken($token);
-        //         $userToken->setUser($user);
-        //         $userTokens[] = $userToken;
-        //     }
-        //     $user->setTokens($userTokens);
-        // }
+         $this->updateUserTokens($request, $entityManager, $user);
 
         $entityManager->persist($user);
         $entityManager->flush();
+        $entityManager->clear();
+        // re-read after changing stuff
+        $user = $entityManager->getRepository(User::class)->findByIdentifier($user->getId());
 
         return $this->json([
             'user' => $this->userSerializer->serialize($user),
@@ -181,6 +171,7 @@ class UserController extends AbstractController
      */
     function updateUser($userId, Request $request, EntityManagerInterface $entityManager)
     {
+        /** @var User $user */
         $user = $entityManager->getRepository(User::class)->findByIdentifier($userId);
         if (!$user) {
             throw new UserNotFoundException($userId);
@@ -210,22 +201,7 @@ class UserController extends AbstractController
 
             $user->setEmail($email);
         }
-
-        // $tokens = $request->request->get('tokens');
-        // if ($tokens) {
-        //     $userTokens = [];
-        //     foreach ($tokens as $token) {
-        //         $userToken = $entityManager->getRepository(UserToken::class)->findByToken($token);
-        //         if ($userToken && $userToken->getUser() != $user) {
-        //             throw new TokenAlreadyInUseException($token);
-        //         }
-        //         $userToken = new UserToken();
-        //         $userToken->setToken($token);
-        //         $userToken->setUser($user);
-        //         $userTokens[] = $userToken;
-        //     }
-        //     $user->setTokens($userTokens);
-        // }
+        $this->updateUserTokens($request, $entityManager, $user);
 
         $isDisabled = $request->request->get('isDisabled');
         if ($isDisabled !== null) {
@@ -234,9 +210,47 @@ class UserController extends AbstractController
 
         $entityManager->persist($user);
         $entityManager->flush();
+        $entityManager->clear();
+        // re-read after changing stuff
+        $user = $entityManager->getRepository(User::class)->findByIdentifier($userId);
 
         return $this->json([
             'user' => $this->userSerializer->serialize($user),
         ]);
+    }
+
+    /**
+     * @param Request $request
+     * @param EntityManagerInterface $entityManager
+     * @param User $user
+     * @return void
+     * @throws TokenAlreadyInUseException
+     */
+    public function updateUserTokens(Request $request, EntityManagerInterface $entityManager, User $user): void
+    {
+        /** @var array $tokens
+         */
+        $tokens = $request->request->get('tokens');
+        if ($tokens !== null) {
+            foreach ($tokens as $token) {
+                $userToken = $entityManager->getRepository(UserToken::class)->findByToken($token);
+                if ($userToken && $userToken->getUser() != $user) {
+                    throw new TokenAlreadyInUseException($token);
+                }
+                if (!$user->getTokens()->exists(function ($key, $element) use ($token) {
+                    return $element->getToken() === $token;
+                })) {
+                    $addToken = new UserToken();
+                    $addToken->setToken($token);
+                    $addToken->setUser($user);
+                    $entityManager->persist($addToken);
+                }
+            }
+            foreach ($user->getTokens() as $userToken) {
+                if (!in_array($userToken->getToken(), $tokens)) {
+                    $entityManager->remove($userToken);
+                }
+            }
+        }
     }
 }

@@ -29,7 +29,7 @@ class UserSerializer
             'isDisabled' => $user->isDisabled(),
             'tokens' => $user->getTokens()->map(function ($token) {
                 return $token->getToken();
-            }),
+            })->toArray(),
             'created' => $user->getCreated()->format('Y-m-d H:i:s'),
             'updated' => $user->getUpdated() ? $user->getUpdated()->format('Y-m-d H:i:s') : null
         ];
