@@ -5,7 +5,7 @@ namespace App\Controller\Api;
 use App\Entity\Article;
 use App\Entity\Transaction;
 use App\Entity\User;
-use App\Exception\UserNotFoundException;
+use App\Exception\TokenNotFoundException;
 use App\Repository\ArticleRepository;
 use App\Serializer\ArticleSerializer;
 use App\Service\ArticleService;
@@ -17,12 +17,14 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
-class MetricsController extends AbstractController {
+class MetricsController extends AbstractController
+{
 
     /**
      * @Route("/api/metrics", methods="GET")
      */
-    function metrics(Request $request, ArticleRepository $articleRepository, ArticleSerializer $articleSerializer, EntityManagerInterface $entityManager) {
+    function metrics(Request $request, ArticleRepository $articleRepository, ArticleSerializer $articleSerializer, EntityManagerInterface $entityManager)
+    {
         $days = $request->query->get('days', 30);
         $articles = $articleRepository->findBy(['active' => true], ['usageCount' => 'DESC']);
 
@@ -41,14 +43,15 @@ class MetricsController extends AbstractController {
      * @Route("/api/user/{userId}/metrics", methods="GET")
      */
 
-    function userMetrics($userId, ArticleSerializer $articleSerializer, EntityManagerInterface $entityManager) {
+    function userMetrics($userId, ArticleSerializer $articleSerializer, EntityManagerInterface $entityManager)
+    {
         /**
          * @var $user User
          */
         $user = $entityManager->getRepository(User::class)->findByIdentifier($userId);
 
         if (!$user) {
-            throw new UserNotFoundException($userId);
+            throw new TokenNotFoundException($userId);
         }
 
         $articles = $entityManager->createQueryBuilder()
@@ -90,7 +93,7 @@ class MetricsController extends AbstractController {
                     'article' => $articleSerializer->serialize($article['article'], 0),
                     'count' => (int) $article['count'],
                     'amount' => (int) $article['amount'],
-                 ];
+                ];
             }, $articles),
 
             'transactions' => [
@@ -101,7 +104,8 @@ class MetricsController extends AbstractController {
         ]);
     }
 
-    private function getBalance(EntityManagerInterface $entityManager): int {
+    private function getBalance(EntityManagerInterface $entityManager): int
+    {
         return $entityManager->createQueryBuilder()
             ->select('SUM(u.balance) as balance')
             ->from(User::class, 'u')
@@ -110,7 +114,8 @@ class MetricsController extends AbstractController {
             ->getSingleScalarResult() ?: 0;
     }
 
-    private function getTransactionCount(EntityManagerInterface $entityManager): int {
+    private function getTransactionCount(EntityManagerInterface $entityManager): int
+    {
         return $entityManager->createQueryBuilder()
             ->select('COUNT(t) as count')
             ->from(Transaction::class, 't')
@@ -118,7 +123,8 @@ class MetricsController extends AbstractController {
             ->getSingleScalarResult() ?: 0;
     }
 
-    private function getTransactionsPerDay(EntityManagerInterface $entityManager, int $days): array {
+    private function getTransactionsPerDay(EntityManagerInterface $entityManager, int $days): array
+    {
         $entries = [];
 
         $begin = new \DateTime(sprintf('-%d day', $days));
@@ -162,7 +168,7 @@ class MetricsController extends AbstractController {
             ->getQuery()
             ->getArrayResult();
 
-        foreach($results as $result) {
+        foreach ($results as $result) {
             $key = $result['createDate'];
 
             $entries[$key] = array_merge($entries[$key], [
@@ -186,7 +192,8 @@ class MetricsController extends AbstractController {
         return array_values(array_reverse($entries));
     }
 
-    private function getUserCount(EntityManagerInterface $entityManager): int {
+    private function getUserCount(EntityManagerInterface $entityManager): int
+    {
         return $entityManager->createQueryBuilder()
             ->select('COUNT(u) as count')
             ->from(User::class, 'u')
@@ -194,7 +201,8 @@ class MetricsController extends AbstractController {
             ->getSingleScalarResult();
     }
 
-    private function getUserTransactionBaseQuery(User $user, EntityManagerInterface $entityManager): QueryBuilder {
+    private function getUserTransactionBaseQuery(User $user, EntityManagerInterface $entityManager): QueryBuilder
+    {
         return $entityManager->createQueryBuilder()
             ->select('COUNT(t.id) as count, SUM(t.amount) amount')
             ->from(Transaction::class, 't')

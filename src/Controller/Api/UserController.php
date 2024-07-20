@@ -7,7 +7,7 @@ use App\Exception\ParameterInvalidException;
 use App\Exception\ParameterMissingException;
 use App\Exception\TokenAlreadyInUseException;
 use App\Exception\UserAlreadyExistsException;
-use App\Exception\UserNotFoundException;
+use App\Exception\TokenNotFoundException;
 use App\Serializer\UserSerializer;
 use App\Service\UserService;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -150,7 +150,7 @@ class UserController extends AbstractController
         $token = $request->query->get('token');
         $tokenUser = $entityManager->getRepository(User::class)->findByToken($token);
         if (!$tokenUser) {
-            throw new UserNotFoundException($token);
+            throw new TokenNotFoundException($token);
         }
 
         return $this->json([
@@ -165,7 +165,7 @@ class UserController extends AbstractController
     {
         $user = $entityManager->getRepository(User::class)->findByIdentifier($userId);
         if (!$user) {
-            throw new UserNotFoundException($userId);
+            throw new TokenNotFoundException($userId);
         }
 
         return $this->json([
@@ -181,7 +181,7 @@ class UserController extends AbstractController
         /** @var User $user */
         $user = $entityManager->getRepository(User::class)->findByIdentifier($userId);
         if (!$user) {
-            throw new UserNotFoundException($userId);
+            throw new TokenNotFoundException($userId);
         }
 
         $name = $request->request->get('name');

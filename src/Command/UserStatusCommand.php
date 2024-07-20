@@ -3,26 +3,29 @@
 namespace App\Command;
 
 use App\Entity\User;
-use App\Exception\UserNotFoundException;
+use App\Exception\TokenNotFoundException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class UserStatusCommand extends Command {
+class UserStatusCommand extends Command
+{
 
     /**
      * @var EntityManagerInterface
      */
     private $entityManager;
 
-    function __construct(EntityManagerInterface $entityManager) {
+    function __construct(EntityManagerInterface $entityManager)
+    {
         parent::__construct();
         $this->entityManager = $entityManager;
     }
 
-    protected function configure() {
+    protected function configure()
+    {
         $this
             ->setName('app:user:status')
             ->setDescription('Updates User status')
@@ -30,13 +33,14 @@ class UserStatusCommand extends Command {
             ->addArgument('disable', InputArgument::REQUIRED, 'true or false');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int {
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
         $userId = $input->getArgument('userId');
         $disabled = $input->getArgument('disable') === 'true';
 
         $user = $this->entityManager->getRepository(User::class)->findByIdentifier($userId);
         if (!$user) {
-            throw new UserNotFoundException($user);
+            throw new TokenNotFoundException($user);
         }
 
         $user->setDisabled($disabled);

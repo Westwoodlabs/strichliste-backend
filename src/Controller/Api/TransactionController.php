@@ -6,7 +6,7 @@ use App\Entity\Transaction;
 use App\Entity\User;
 use App\Exception\ParameterInvalidException;
 use App\Exception\TransactionNotFoundException;
-use App\Exception\UserNotFoundException;
+use App\Exception\TokenNotFoundException;
 use App\Serializer\TransactionSerializer;
 use App\Service\TransactionService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,21 +17,24 @@ use Symfony\Component\Routing\Annotation\Route;
 /**
  * @Route("/api")
  */
-class TransactionController extends AbstractController {
+class TransactionController extends AbstractController
+{
 
     /**
      * @var TransactionSerializer
      */
     private $transactionSerializer;
 
-    function __construct(TransactionSerializer $transactionSerializer) {
+    function __construct(TransactionSerializer $transactionSerializer)
+    {
         $this->transactionSerializer = $transactionSerializer;
     }
 
     /**
      * @Route("/transaction", methods="GET")
      */
-    function list(Request $request, EntityManagerInterface $entityManager) {
+    function list(Request $request, EntityManagerInterface $entityManager)
+    {
         $limit = $request->query->get('limit', 25);
         $offset = $request->query->get('offset');
 
@@ -49,7 +52,8 @@ class TransactionController extends AbstractController {
     /**
      * @Route("/user/{userId}/transaction", methods="POST")
      */
-    function createUserTransactions($userId, Request $request, TransactionService $transactionService, EntityManagerInterface $entityManager) {
+    function createUserTransactions($userId, Request $request, TransactionService $transactionService, EntityManagerInterface $entityManager)
+    {
         $amount = $request->request->get('amount');
         $quantity = $request->request->get('quantity');
         $comment = $request->request->get('comment');
@@ -62,7 +66,7 @@ class TransactionController extends AbstractController {
 
         $user = $entityManager->getRepository(User::class)->find($userId);
         if (!$user) {
-            throw new UserNotFoundException($userId);
+            throw new TokenNotFoundException($userId);
         }
 
         $transaction = $transactionService->doTransaction($user, $amount, $comment, $quantity, $articleId, $recipientId);
@@ -75,13 +79,14 @@ class TransactionController extends AbstractController {
     /**
      * @Route("/user/{userId}/transaction", methods="GET")
      */
-    function getUserTransactions($userId, Request $request, EntityManagerInterface $entityManager) {
+    function getUserTransactions($userId, Request $request, EntityManagerInterface $entityManager)
+    {
         $limit = $request->query->get('limit', 25);
         $offset = $request->query->get('offset');
 
         $user = $entityManager->getRepository(User::class)->find($userId);
         if (!$user) {
-            throw new UserNotFoundException($userId);
+            throw new TokenNotFoundException($userId);
         }
 
         $count = $entityManager->getRepository(Transaction::class)->countByUser($user);
@@ -98,10 +103,11 @@ class TransactionController extends AbstractController {
     /**
      * @Route("/user/{userId}/transaction/{transactionId}", methods="GET")
      */
-    function getUserTransaction($userId, $transactionId, EntityManagerInterface $entityManager) {
+    function getUserTransaction($userId, $transactionId, EntityManagerInterface $entityManager)
+    {
         $user = $entityManager->getRepository(User::class)->find($userId);
         if (!$user) {
-            throw new UserNotFoundException($userId);
+            throw new TokenNotFoundException($userId);
         }
 
         $transaction = $entityManager->getRepository(Transaction::class)->find($transactionId);
@@ -117,7 +123,8 @@ class TransactionController extends AbstractController {
     /**
      * @Route("/user/{userId}/transaction/{transactionId}", methods="DELETE")
      */
-    function deleteTransaction($userId, $transactionId, TransactionService $transactionService) {
+    function deleteTransaction($userId, $transactionId, TransactionService $transactionService)
+    {
         $transaction = $transactionService->revertTransaction($transactionId);
 
         return $this->json([

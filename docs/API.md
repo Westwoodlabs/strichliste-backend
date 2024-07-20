@@ -83,7 +83,7 @@ Returns the `User-Object`
 
 #### Errors
 
-* UserNotFoundException
+* TokenNotFoundException
 
 ### GET /user/{userId}/transaction
 
@@ -129,7 +129,7 @@ Returns a list of transactions as a `Transaction-Object`
 
 #### Errors
 
-* UserNotFoundException
+* TokenNotFoundException
 
 ### GET /user/{userId}/transaction/{transactionId}
 
@@ -170,7 +170,7 @@ Returns a `Transaction-Object`
 
 #### Errors
 
-* UserNotFoundException
+* TokenNotFoundException
 * TransactionNotFoundException
 
 ### DELETE /user/{userId}/transaction/{transactionId}
@@ -213,7 +213,7 @@ from the database
 
 #### Errors
 
-* UserNotFoundException
+* TokenNotFoundException
 * TransactionNotFoundException
 * TransactionNotDeletableException
 
@@ -249,7 +249,7 @@ Returns the created `User-Object`
 
 #### Errors
 
-* UserNotFoundException
+* TokenNotFoundException
 * UserAlreadyExistsException
 * TokenAlreadyInUseException
 * ParameterMissingException
@@ -292,7 +292,7 @@ Returns a `Transaction-Object`
 
 #### Errors
 
-* UserNotFoundException
+* TokenNotFoundException
 * ParameterMissingException
 * ParameterInvalidException
 * AccountBalanceBoundaryException
@@ -611,7 +611,7 @@ With these two parameters, you can page through the result set:
 
 ```json
 {
-  "class": "App\\Exception\\UserNotFoundException",
+  "class": "App\\Exception\\TokenNotFoundException",
   "code": 404,
   "message": "User 'schinken' not found"
 }
@@ -633,4 +633,4 @@ Current possible exceptions are
 | TransactionNotFoundException         | 404              | Transaction '42' not found for user '23'                                         |
 | TransactionNotDeletableException     | 400              | Transaction '42' is not deleteable                                               |
 | UserAlreadyExistsException           | 409              | User 'schinken' already exists                                                   |
-| UserNotFoundException                | 404              | User 'schinken' not found                                                        |
+| TokenNotFoundException                | 404              | User 'schinken' not found                                                        |

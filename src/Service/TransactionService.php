@@ -12,11 +12,12 @@ use App\Exception\ParameterNotFoundException;
 use App\Exception\TransactionBoundaryException;
 use App\Exception\TransactionInvalidException;
 use App\Exception\TransactionNotFoundException;
-use App\Exception\UserNotFoundException;
+use App\Exception\TokenNotFoundException;
 use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 
-class TransactionService {
+class TransactionService
+{
 
     /**
      * @var EntityManagerInterface
@@ -28,13 +29,15 @@ class TransactionService {
      */
     private $settingsService;
 
-    function __construct(SettingsService $settingsService, EntityManagerInterface $entityManager) {
+    function __construct(SettingsService $settingsService, EntityManagerInterface $entityManager)
+    {
         $this->entityManager = $entityManager;
         $this->settingsService = $settingsService;
     }
 
 
-    function isDeletable(Transaction $transaction): bool {
+    function isDeletable(Transaction $transaction): bool
+    {
         if ($transaction->isDeleted()) {
             return false;
         }
@@ -69,7 +72,8 @@ class TransactionService {
      * @throws ParameterNotFoundException
      * @return Transaction
      */
-    function doTransaction(User $user, ?int $amount, string $comment = null, ?int $quantity = 1, ?int $articleId = null, ?int $recipientId = null): Transaction {
+    function doTransaction(User $user, ?int $amount, string $comment = null, ?int $quantity = 1, ?int $articleId = null, ?int $recipientId = null): Transaction
+    {
 
         if (($recipientId || $articleId) && $amount > 0) {
             throw new TransactionInvalidException('Amount can\'t be positive when sending money or buying an article');
@@ -107,7 +111,7 @@ class TransactionService {
             if ($recipientId) {
                 $recipient = $this->entityManager->getRepository(User::class)->find($recipientId, LockMode::PESSIMISTIC_WRITE);
                 if (!$recipient) {
-                    throw new UserNotFoundException($recipientId);
+                    throw new TokenNotFoundException($recipientId);
                 }
 
                 $recipientTransaction = new Transaction();
@@ -147,7 +151,8 @@ class TransactionService {
      * @throws ParameterNotFoundException
      * @return Transaction
      */
-    function revertTransaction(int $transactionId): Transaction {
+    function revertTransaction(int $transactionId): Transaction
+    {
         return $this->entityManager->transactional(function () use ($transactionId) {
 
             $transaction = $this->entityManager->getRepository(Transaction::class)->find($transactionId, LockMode::PESSIMISTIC_WRITE);
@@ -184,7 +189,8 @@ class TransactionService {
      * @throws TransactionInvalidException
      * @throws ParameterNotFoundException
      */
-    private function undoTransaction(Transaction $transaction) {
+    private function undoTransaction(Transaction $transaction)
+    {
         $user = $transaction->getUser();
         $this->checkTransactionBoundary($transaction->getAmount());
 
@@ -207,7 +213,8 @@ class TransactionService {
      * @throws TransactionInvalidException
      * @throws ParameterNotFoundException
      */
-    private function checkTransactionBoundary($amount) {
+    private function checkTransactionBoundary($amount)
+    {
         if (!$amount) {
             throw new TransactionInvalidException();
         }
@@ -228,7 +235,8 @@ class TransactionService {
      * @throws AccountBalanceBoundaryException
      * @throws ParameterNotFoundException
      */
-    private function checkAccountBalanceBoundary(User $user) {
+    private function checkAccountBalanceBoundary(User $user)
+    {
         $balance = $user->getBalance();
 
         $upper = $this->settingsService->getOrDefault('account.boundary.upper', false);
