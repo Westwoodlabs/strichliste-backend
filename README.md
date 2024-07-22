@@ -30,7 +30,7 @@ For documentation of the config parameters in `config/services.yml`, please read
 
 ```bash
 # Install dependencies
-composer install
+composer update
 ```
 
 # Creat database schema
