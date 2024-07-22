@@ -7,6 +7,6 @@ class TokenNotFoundException extends ApiException
 
     function __construct($identifier)
     {
-        parent::__construct(sprintf("Token '%s' not found", $identifier), 404);
+        parent::__construct(sprintf("No user with token '%s' found", $identifier), 404);
     }
 }
