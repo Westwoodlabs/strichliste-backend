@@ -3,6 +3,10 @@
 strichliste ([ʃtʀɪçˈlɪstə], German word for tally sheet) is a tool to replace a tally sheet inside a hackerspace. It is the first project developed by the hackerspace bootstrap organization.
 It’s aim is to provide a no-frills, easy-to-setup and -to-use solution for managing your organization’s snack bar. 
 
+## Prebuild production version
+
+A prebuilded production version with bundled front- and backend of the project can be found at [strichliste-docker](https://github.com/Westwoodlabs/strichliste-docker)
+
 ## How it works?
 
 The processes implemented by strichliste inherently assumes to be used by a trusted audience. Each user intending to buy something from your kiosk is required to have a user account with strichliste. This can be done by registering your username (no other data is required).
@@ -26,14 +30,14 @@ For a full documentation or the strichliste2 API, please see the API.md file.
 
 For documentation of the config parameters in `config/services.yml`, please read the Config.md file.
 
-## Development
+## Development hints
 
+### Install dependencies
 ```bash
-# Install dependencies
 composer update
 ```
 
-# Creat database schema
+### Creat database schema
 ```bash
 php bin/console  doctrine:schema:create
 ```
